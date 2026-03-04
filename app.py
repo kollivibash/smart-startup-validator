@@ -75,7 +75,7 @@ def call_ai(prompt, api_key):
             "Content-Type": "application/json"
         }
         data = {
-            "model": "mistralai/mistral-7b-instruct:free",
+            "model": "google/gemma-3-4b-it:free",
             "messages": [{"role": "user", "content": prompt}]
         }
         response = requests.post(url, headers=headers, json=data)
