@@ -47,11 +47,11 @@ def fetch_one(rid):
 def build_prompt(idea, audience, budget, industry, risk_level):
     prompt = "You are an expert startup consultant with 20 years of experience.\n\n"
     prompt += "STARTUP DETAILS:\n"
-    prompt += f"Idea: {idea}\n"
-    prompt += f"Target Audience: {audience}\n"
-    prompt += f"Budget: {budget}\n"
-    prompt += f"Industry: {industry}\n"
-    prompt += f"Risk Tolerance: {risk_level}\n\n"
+    prompt += "Idea: " + idea + "\n"
+    prompt += "Target Audience: " + audience + "\n"
+    prompt += "Budget: " + budget + "\n"
+    prompt += "Industry: " + industry + "\n"
+    prompt += "Risk Tolerance: " + risk_level + "\n\n"
     prompt += "Provide a detailed validation report with these sections:\n\n"
     prompt += "## SWOT Analysis\n"
     prompt += "Strengths, Weaknesses, Opportunities, Threats (3-4 bullets each)\n\n"
@@ -69,19 +69,25 @@ def build_prompt(idea, audience, budget, industry, risk_level):
 
 def call_gemini(prompt, api_key):
     try:
-        url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent"
-        headers = {"Content-Type": "application/json"}
-        params = {"key": api_key}
-        data = {"contents": [{"parts": [{"text": prompt}]}]}
-        response = requests.post(url, headers=headers, params=params, json=data)
-        result = response.json()
+        models_to_try = [
+            "gemini-1.5-flash-latest",
+            "gemini-1.5-pro-latest",
+            "gemini-pro"
+        ]
+        for model_name in models_to_try:
+            url = "https://generativelanguage.googleapis.com/v1beta/models/" + model_name + ":generateContent"
+            headers = {"Content-Type": "application/json"}
+            params = {"key": api_key}
+            data = {"contents": [{"parts": [{"text": prompt}]}]}
+            response = requests.post(url, headers=headers, params=params, json=data)
+            result = response.json()
+            if "candidates" in result:
+                return result["candidates"][0]["content"]["parts"][0]["text"]
         if "error" in result:
-            return f"API Error: {result['error']['message']}"
-        if "candidates" not in result:
-            return f"Unexpected response: {str(result)}"
-        return result["candidates"][0]["content"]["parts"][0]["text"]
+            return "API Error: " + result["error"]["message"]
+        return "Unexpected response: " + str(result)
     except Exception as e:
-        return f"Error: {str(e)}"
+        return "Error: " + str(e)
 
 def main():
     init_db()
@@ -95,13 +101,13 @@ def main():
         st.markdown("---")
         st.markdown("### Past Validations")
         for row in fetch_history():
-            if st.button(f"#{row[0]} — {row[1][:25]}...", key=f"h{row[0]}"):
+            if st.button("#{} — {}...".format(row[0], row[1][:25]), key="h{}".format(row[0])):
                 st.session_state["view_id"] = row[0]
 
     if "view_id" in st.session_state:
         rec = fetch_one(st.session_state["view_id"])
         if rec:
-            st.subheader(f"Past Result #{rec[0]}")
+            st.subheader("Past Result #{}".format(rec[0]))
             st.markdown(rec[6])
         if st.button("Back"):
             del st.session_state["view_id"]
@@ -140,7 +146,7 @@ def main():
             save_to_db(idea, audience, budget, industry, risk_level, result)
             st.info("Saved to history.")
             st.download_button("Download Report", data=result,
-                file_name=f"validation_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.txt",
+                file_name="validation_{}.txt".format(datetime.datetime.now().strftime("%Y%m%d_%H%M%S")),
                 mime="text/plain")
 
 if __name__ == "__main__":
