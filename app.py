@@ -83,11 +83,26 @@ Threats: (3-4 bullets)
 
 def call_gemini(prompt, api_key):
     try:
-        genai.configure(api_key=api_key)
-        model = genai.GenerativeModel("gemini-2.0-flash-exp")
-        return model.generate_content(prompt).text
+        import requests
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={api_key}"
+        headers = {"Content-Type": "application/json"}
+        data = {"contents": [{"parts": [{"text": prompt}]}]}
+        response = requests.post(url, headers=headers, json=data)
+        result = response.json()
+        return result["candidates"][0]["content"]["parts"][0]["text"]
     except Exception as e:
         return f"Error: {str(e)}"
+```
+
+Save with **Cmd+S**, then:
+```
+git add app.py
+```
+```
+git commit -m "Fix: use direct Gemini API call"
+```
+```
+git push
 
 def main():
     init_db()
