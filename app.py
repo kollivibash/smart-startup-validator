@@ -45,8 +45,7 @@ def fetch_one(rid):
     return row
 
 def build_prompt(idea, audience, budget, industry, risk_level):
-    return f"""
-You are an expert startup consultant with 20+ years of experience.
+    return f"""You are an expert startup consultant with 20 years of experience.
 
 STARTUP DETAILS:
 Idea: {idea}
@@ -78,16 +77,20 @@ Threats: (3-4 bullets)
 3. Action with timeline
 
 ## Overall Verdict
-(2-3 honest sentences on viability)
-"""
+(2-3 honest sentences on viability)"""
 
 def call_gemini(prompt, api_key):
     try:
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={api_key}"
+        url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent"
         headers = {"Content-Type": "application/json"}
+        params = {"key": api_key}
         data = {"contents": [{"parts": [{"text": prompt}]}]}
-        response = requests.post(url, headers=headers, json=data)
+        response = requests.post(url, headers=headers, params=params, json=data)
         result = response.json()
+        if "error" in result:
+            return f"API Error: {result['error']['message']}"
+        if "candidates" not in result:
+            return f"Unexpected response: {str(result)}"
         return result["candidates"][0]["content"]["parts"][0]["text"]
     except Exception as e:
         return f"Error: {str(e)}"
@@ -142,7 +145,7 @@ def main():
         with st.spinner("Analyzing your idea... (15-30 seconds)"):
             result = call_gemini(build_prompt(idea, audience, budget, industry, risk_level), api_key)
 
-        if result.startswith("Error"):
+        if result.startswith("Error") or result.startswith("API Error") or result.startswith("Unexpected"):
             st.error(result)
         else:
             st.success("Analysis Complete!")
@@ -157,3 +160,14 @@ def main():
 
 if __name__ == "__main__":
     main()
+```
+
+Save with **Cmd+S**, then run these in Terminal one at a time:
+```
+git add app.py
+```
+```
+git commit -m "Fix: improved API call and error handling"
+```
+```
+git push
