@@ -84,7 +84,7 @@ Threats: (3-4 bullets)
 def call_gemini(prompt, api_key):
     try:
         genai.configure(api_key=api_key)
-        model = genai.GenerativeModel("gemini-1.5-flash")
+        model = genai.GenerativeModel("gemini-2.0-flash-exp")
         return model.generate_content(prompt).text
     except Exception as e:
         return f"Error: {str(e)}"
