@@ -1,7 +1,7 @@
 import streamlit as st
-import google.generativeai as genai
 import sqlite3
 import datetime
+import requests
 
 st.set_page_config(page_title="Smart Startup Validator", page_icon="🚀", layout="wide")
 
@@ -70,7 +70,7 @@ Threats: (3-4 bullets)
 (3 models with explanations)
 
 ## Risk Analysis
-(Top 3 risks with mitigations for {risk_level} risk and {budget} budget)
+(Top 3 risks with mitigations)
 
 ## 3 Actionable Next Steps
 1. Action with timeline
@@ -83,7 +83,6 @@ Threats: (3-4 bullets)
 
 def call_gemini(prompt, api_key):
     try:
-        import requests
         url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={api_key}"
         headers = {"Content-Type": "application/json"}
         data = {"contents": [{"parts": [{"text": prompt}]}]}
@@ -92,17 +91,6 @@ def call_gemini(prompt, api_key):
         return result["candidates"][0]["content"]["parts"][0]["text"]
     except Exception as e:
         return f"Error: {str(e)}"
-```
-
-Save with **Cmd+S**, then:
-```
-git add app.py
-```
-```
-git commit -m "Fix: use direct Gemini API call"
-```
-```
-git push
 
 def main():
     init_db()
