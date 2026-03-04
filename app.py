@@ -69,20 +69,14 @@ def build_prompt(idea, audience, budget, industry, risk_level):
 
 def call_gemini(prompt, api_key):
     try:
-        models_to_try = [
-            "gemini-1.5-flash-latest",
-            "gemini-1.5-pro-latest",
-            "gemini-pro"
-        ]
-        for model_name in models_to_try:
-            url = "https://generativelanguage.googleapis.com/v1beta/models/" + model_name + ":generateContent"
-            headers = {"Content-Type": "application/json"}
-            params = {"key": api_key}
-            data = {"contents": [{"parts": [{"text": prompt}]}]}
-            response = requests.post(url, headers=headers, params=params, json=data)
-            result = response.json()
-            if "candidates" in result:
-                return result["candidates"][0]["content"]["parts"][0]["text"]
+        url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent"
+        headers = {"Content-Type": "application/json"}
+        params = {"key": api_key}
+        data = {"contents": [{"parts": [{"text": prompt}]}]}
+        response = requests.post(url, headers=headers, params=params, json=data)
+        result = response.json()
+        if "candidates" in result:
+            return result["candidates"][0]["content"]["parts"][0]["text"]
         if "error" in result:
             return "API Error: " + result["error"]["message"]
         return "Unexpected response: " + str(result)
