@@ -67,18 +67,23 @@ def build_prompt(idea, audience, budget, industry, risk_level):
     prompt += "2-3 honest sentences on viability"
     return prompt
 
-def call_gemini(prompt, api_key):
+def call_ai(prompt, api_key):
     try:
-        url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent"
-        headers = {"Content-Type": "application/json"}
-        params = {"key": api_key}
-        data = {"contents": [{"parts": [{"text": prompt}]}]}
-        response = requests.post(url, headers=headers, params=params, json=data)
+        url = "https://openrouter.ai/api/v1/chat/completions"
+        headers = {
+            "Authorization": "Bearer " + api_key,
+            "Content-Type": "application/json"
+        }
+        data = {
+            "model": "mistralai/mistral-7b-instruct:free",
+            "messages": [{"role": "user", "content": prompt}]
+        }
+        response = requests.post(url, headers=headers, json=data)
         result = response.json()
-        if "candidates" in result:
-            return result["candidates"][0]["content"]["parts"][0]["text"]
+        if "choices" in result:
+            return result["choices"][0]["message"]["content"]
         if "error" in result:
-            return "API Error: " + result["error"]["message"]
+            return "API Error: " + str(result["error"]["message"])
         return "Unexpected response: " + str(result)
     except Exception as e:
         return "Error: " + str(e)
@@ -90,8 +95,8 @@ def main():
 
     with st.sidebar:
         st.header("Settings")
-        api_key = st.text_input("Gemini API Key", type="password",
-                                help="Get free key at aistudio.google.com/app/apikey")
+        api_key = st.text_input("OpenRouter API Key", type="password",
+                                help="Get free key at openrouter.ai")
         st.markdown("---")
         st.markdown("### Past Validations")
         for row in fetch_history():
@@ -126,10 +131,10 @@ def main():
             st.warning("Please describe your startup idea.")
             return
         if not api_key:
-            st.warning("Please enter your Gemini API key in the sidebar.")
+            st.warning("Please enter your OpenRouter API key in the sidebar.")
             return
         with st.spinner("Analyzing your idea... (15-30 seconds)"):
-            result = call_gemini(build_prompt(idea, audience, budget, industry, risk_level), api_key)
+            result = call_ai(build_prompt(idea, audience, budget, industry, risk_level), api_key)
         if result.startswith("Error") or result.startswith("API Error") or result.startswith("Unexpected"):
             st.error(result)
         else:
