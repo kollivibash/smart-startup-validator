@@ -45,39 +45,27 @@ def fetch_one(rid):
     return row
 
 def build_prompt(idea, audience, budget, industry, risk_level):
-    return f"""You are an expert startup consultant with 20 years of experience.
-
-STARTUP DETAILS:
-Idea: {idea}
-Target Audience: {audience}
-Budget: {budget}
-Industry: {industry}
-Risk Tolerance: {risk_level}
-
-Provide a detailed validation report with these exact sections:
-
-## SWOT Analysis
-Strengths: (3-4 bullets)
-Weaknesses: (3-4 bullets)
-Opportunities: (3-4 bullets)
-Threats: (3-4 bullets)
-
-## Market Opportunity
-(4 bullets: size, pain point, gap, competition)
-
-## Revenue Model Suggestions
-(3 models with explanations)
-
-## Risk Analysis
-(Top 3 risks with mitigations)
-
-## 3 Actionable Next Steps
-1. Action with timeline
-2. Action with timeline
-3. Action with timeline
-
-## Overall Verdict
-(2-3 honest sentences on viability)"""
+    prompt = "You are an expert startup consultant with 20 years of experience.\n\n"
+    prompt += "STARTUP DETAILS:\n"
+    prompt += f"Idea: {idea}\n"
+    prompt += f"Target Audience: {audience}\n"
+    prompt += f"Budget: {budget}\n"
+    prompt += f"Industry: {industry}\n"
+    prompt += f"Risk Tolerance: {risk_level}\n\n"
+    prompt += "Provide a detailed validation report with these sections:\n\n"
+    prompt += "## SWOT Analysis\n"
+    prompt += "Strengths, Weaknesses, Opportunities, Threats (3-4 bullets each)\n\n"
+    prompt += "## Market Opportunity\n"
+    prompt += "4 bullets on size, pain point, gap, competition\n\n"
+    prompt += "## Revenue Model Suggestions\n"
+    prompt += "3 models with explanations\n\n"
+    prompt += "## Risk Analysis\n"
+    prompt += "Top 3 risks with mitigations\n\n"
+    prompt += "## 3 Actionable Next Steps\n"
+    prompt += "Numbered steps with timelines\n\n"
+    prompt += "## Overall Verdict\n"
+    prompt += "2-3 honest sentences on viability"
+    return prompt
 
 def call_gemini(prompt, api_key):
     try:
@@ -97,7 +85,6 @@ def call_gemini(prompt, api_key):
 
 def main():
     init_db()
-
     st.title("🚀 Smart Startup Idea Validator")
     st.caption("AI-powered startup analysis — 100% free")
 
@@ -141,10 +128,8 @@ def main():
         if not api_key:
             st.warning("Please enter your Gemini API key in the sidebar.")
             return
-
         with st.spinner("Analyzing your idea... (15-30 seconds)"):
             result = call_gemini(build_prompt(idea, audience, budget, industry, risk_level), api_key)
-
         if result.startswith("Error") or result.startswith("API Error") or result.startswith("Unexpected"):
             st.error(result)
         else:
@@ -160,14 +145,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-```
-
-Save with **Cmd+S**, then run these in Terminal one at a time:
-```
-git add app.py
-```
-```
-git commit -m "Fix: improved API call and error handling"
-```
-```
-git push
